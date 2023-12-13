@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { initialColors, initialAnimals } from './data';
 
 export default function Home() {
-  const initialColors = ['red', 'green', 'blue', 'yellow', 'pink', 'purple'];
-  const initialAnimals = ['panda', 'bear', 'cat', 'dog', 'elephant', 'frog'];
+  // const initialColors = ['red', 'green', 'blue', 'yellow', 'pink', 'purple'];
+  // const initialAnimals = ['panda', 'bear', 'cat', 'dog', 'elephant', 'frog'];
 
   // State for the current and next combinations
   const [currentCombination, setCurrentCombination] = useState({ color: 'purple', animal: 'panda' });
