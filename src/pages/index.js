@@ -57,7 +57,7 @@ export default function Home() {
   return (
     <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-4 bg-white text-black">
       <h1 className="text-xl font-bold pt-8">
-        {currentCombination.color} {currentCombination.animal}, What do you see?
+        {currentCombination.color} {currentCombination.animal}, {currentCombination.color} {currentCombination.animal}, What do you see?
       </h1>
       
       <div className="flex flex-col items-center justify-center flex-grow">
