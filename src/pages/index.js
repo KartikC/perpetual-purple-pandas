@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { initialColors, initialAnimals } from './data';
+import { initialColors, initialAnimals } from '../constants/data';
 import Image from 'next/image';
 import ColorThief from 'colorthief';
 
