@@ -82,7 +82,7 @@ function capitalizeFirstLetter(string) {
 }
 
   return (
-    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center pl-5 pr-5 pt-20 pb-20 bg-cover" style={{ backgroundColor: colors.bgColor }}>
+    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center pl-5 pr-5 pt-5 pb-20 bg-cover" style={{ backgroundColor: colors.bgColor }}>
 <h1 className="text-2xl font-bold self-start" style={{ color: colors.topTextColor }}>
   {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, <br/>What do you see?
 </h1>
