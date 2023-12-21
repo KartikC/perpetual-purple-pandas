@@ -7,7 +7,11 @@ export default function Home() {
   const [currentCombination, setCurrentCombination] = useState({ color: 'purple', animal: 'panda' });
   const [nextCombination, setNextCombination] = useState({});
   const [usedAnimals, setUsedAnimals] = useState(['panda']);
-  const [bgColor, setBgColor] = useState('white');
+  const [colors, setColors] = useState({
+    bgColor: 'white',
+    topTextColor: 'black',
+    bottomTextColor: 'grey'
+  });
 
   const imgRef = useRef(null);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -37,18 +41,18 @@ export default function Home() {
     setUsedAnimals(prevUsedAnimals => [...prevUsedAnimals, nextAnimal]);
   }, [usedAnimals, pickNewAnimal, shuffleArray]);
 
-  const updateBgColor = () => {
+  const updateColors = () => {
     if (imgRef.current && imageLoaded) {
       const imgEl = imgRef.current.querySelector('img');
-      // Make sure the image is loaded and not tainted by cross-origin restrictions
       if (imgEl && imgEl.complete) {
-        try {
-          const colorThief = new ColorThief();
-          const dominantColor = colorThief.getColor(imgEl);
-          setBgColor(`rgb(${dominantColor.join(',')})`);
-        } catch (e) {
-          console.error('Error extracting color:', e);
-        }
+        const colorThief = new ColorThief();
+        // Use the color thief library to get the color palette
+        const palette = colorThief.getPalette(imgEl, 3); // Get the top 3 dominant colors
+        setColors({
+          bgColor: `rgb(${palette[0].join(',')})`,
+          topTextColor: `rgb(${palette[1].join(',')})`,
+          bottomTextColor: `rgb(${palette[2].join(',')})`
+        });
       }
     }
   };
@@ -59,7 +63,7 @@ export default function Home() {
 
   useEffect(() => {
     if (imageLoaded) {
-      updateBgColor();
+      updateColors();
     }
   }, [imageLoaded]);
 
@@ -70,25 +74,28 @@ export default function Home() {
   };
 
   return (
-    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-4" style={{ backgroundColor: bgColor }}>
-      <h1 className="text-xl text-black font-bold pt-8">
+    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-4 bg-cover" style={{ backgroundColor: colors.bgColor }}>
+      <h1 className="text-xl font-bold pt-8 self-start" style={{ color: colors.topTextColor }}>
         {currentCombination.color} {currentCombination.animal}, {currentCombination.color} {currentCombination.animal}, What do you see?
       </h1>
 
-      <div className="flex flex-col items-center justify-center flex-grow">
-        <div className="w-full max-w-sm h-64 flex items-center justify-center relative" ref={imgRef}>
+      {/* Image container - flex-grow to take available space, max-w and max-h to prevent overflow */}
+      <div className="flex-grow w-full flex items-center justify-center p-4">
+        <div className="relative w-full h-3/4" ref={imgRef}>
           <Image
             src={`https://raw.githubusercontent.com/KartikC/perpetual-purple-pandas/main/public/animals/${currentCombination.color.toLowerCase()}%20${currentCombination.animal.toLowerCase()}.png`} 
             alt={`${currentCombination.color} ${currentCombination.animal}`}
-            width={500}
-            height={320}
+            layout="fill" // Use 'fill' layout for responsive image size
+            objectFit="contain" // Contain the image within the element
             onLoad={() => setImageLoaded(true)}
           />
         </div>
       </div>
 
+      
+
       {nextCombination.color && nextCombination.animal && (
-        <p className="text-xl text-black mb-8">
+        <p className="text-xl font-light pb-8 self-end" style={{ color: colors.bottomTextColor }}>
           Next: {nextCombination.color} {nextCombination.animal} looking at me.
         </p>
       )}

@@ -140,7 +140,6 @@ const initialAnimals = [
 
 const initialColors = [
     'amber',
-    'apricot ', 
     'aqua',
     'azure',
     'beige',
