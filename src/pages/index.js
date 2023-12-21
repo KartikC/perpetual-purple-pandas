@@ -37,6 +37,9 @@ export default function Home() {
     }
     const nextAnimal = pickNewAnimal(availableAnimals);
     const nextColor = pickNewAnimal(initialColors);
+    //const nextImageSrc = `https://raw.githubusercontent.com/KartikC/perpetual-purple-pandas/main/public/animals/${nextColor.toLowerCase()}%20${nextAnimal.toLowerCase()}.png`;
+    //preloadImage(nextImageSrc);
+
     setNextCombination({ color: nextColor, animal: nextAnimal });
     setUsedAnimals(prevUsedAnimals => [...prevUsedAnimals, nextAnimal]);
   }, [usedAnimals, pickNewAnimal, shuffleArray]);
@@ -74,19 +77,20 @@ export default function Home() {
   };
 
   return (
-    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-4 bg-cover" style={{ backgroundColor: colors.bgColor }}>
+    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-2 bg-cover" style={{ backgroundColor: colors.bgColor }}>
       <h1 className="text-xl font-bold pt-8 self-start" style={{ color: colors.topTextColor }}>
         {currentCombination.color} {currentCombination.animal}, {currentCombination.color} {currentCombination.animal}, What do you see?
       </h1>
 
       {/* Image container - flex-grow to take available space, max-w and max-h to prevent overflow */}
-      <div className="flex-grow w-full flex items-center justify-center p-4">
+      <div className="flex-grow w-full flex items-center justify-center p-2">
         <div className="relative w-full h-3/4" ref={imgRef}>
           <Image
             src={`https://raw.githubusercontent.com/KartikC/perpetual-purple-pandas/main/public/animals/${currentCombination.color.toLowerCase()}%20${currentCombination.animal.toLowerCase()}.png`} 
             alt={`${currentCombination.color} ${currentCombination.animal}`}
             layout="fill" // Use 'fill' layout for responsive image size
             objectFit="contain" // Contain the image within the element
+            priority={true}
             onLoad={() => setImageLoaded(true)}
           />
         </div>
@@ -95,7 +99,7 @@ export default function Home() {
       
 
       {nextCombination.color && nextCombination.animal && (
-        <p className="text-xl font-light pb-8 self-end" style={{ color: colors.bottomTextColor }}>
+        <p className="text-xl font-light pb-4 self-end" style={{ color: colors.bottomTextColor }}>
           Next: {nextCombination.color} {nextCombination.animal} looking at me.
         </p>
       )}
