@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { initialColors, initialAnimals } from './data';
+import Image from 'next/image';
 
 export default function Home() {
-  // const initialColors = ['red', 'green', 'blue', 'yellow', 'pink', 'purple'];
-  // const initialAnimals = ['panda', 'bear', 'cat', 'dog', 'elephant', 'frog'];
-
   // State for the current and next combinations
   const [currentCombination, setCurrentCombination] = useState({ color: 'purple', animal: 'panda' });
   const [nextCombination, setNextCombination] = useState({});
   const [usedAnimals, setUsedAnimals] = useState(['panda']); // Track used animals as an array
+  const [bgColor, setBgColor] = useState('white'); // Initial bg color set to white
 
   // Function to shuffle an array
   const shuffleArray = useCallback((array) => {
@@ -39,36 +38,71 @@ export default function Home() {
     setNextCombination({ color: nextColor, animal: nextAnimal });
     // Update the used animals with the new animal
     setUsedAnimals(prevUsedAnimals => [...prevUsedAnimals, nextAnimal]);
-  }, [usedAnimals, initialAnimals, initialColors, pickNewAnimal, shuffleArray]);
+  }, [usedAnimals, pickNewAnimal, shuffleArray]);
 
-  // Initialize the next combination on component mount
+  // Function to fetch the border color of the current image
+  const fetchBorderColor = useCallback(async (animal, color) => {
+    if (!animal || !color) {
+      console.error('Animal or color is undefined.');
+      return;
+    }
+  
+    const imagePath = `/animals/${color.toLowerCase()} ${animal.toLowerCase()}.png`;
+    const imageUrl = `${window.location.origin}${imagePath}`;
+  
+    try {
+      const response = await fetch(`/api/get-border-color?imageUrl=${encodeURIComponent(imageUrl)}`);
+      const data = await response.json();
+      if (response.ok) {
+        setBgColor(data.color);
+      } else {
+        throw new Error(data.error || 'API did not return a valid color.');
+      }
+    } catch (error) {
+      console.error('fetchBorderColor error:', error);
+      setBgColor('white');
+    }
+  }, []);
+  
+  
+
+
   useEffect(() => {
     prepareNextCombination();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array ensures this effect only runs once after initial render
+    // No need to call fetchBorderColor here, it will be called in the useEffect below
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Function to handle page turn
+  useEffect(() => {
+    // Call fetchBorderColor when currentCombination changes
+    fetchBorderColor(currentCombination.animal, currentCombination.color);
+  }, [currentCombination, fetchBorderColor]); // fetchBorderColor should be stable and not change on every render
+
   const goToNextPage = () => {
     setCurrentCombination(nextCombination);
     prepareNextCombination();
+    // No need to call fetchBorderColor here, it will be called in the useEffect above
   };
 
-  // Render the component
-  return (
-    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-4 bg-white text-black">
-      <h1 className="text-xl font-bold pt-8">
+   // Render the component
+   return (
+    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-4" style={{ backgroundColor: bgColor }}>
+      <h1 className="text-xl text-black font-bold pt-8">
         {currentCombination.color} {currentCombination.animal}, {currentCombination.color} {currentCombination.animal}, What do you see?
       </h1>
-      
+
       <div className="flex flex-col items-center justify-center flex-grow">
-        <div className="w-full max-w-sm h-64 bg-gray-200 flex items-center justify-center">
-          <div className="text-5xl text-gray-500">{currentCombination.animal}</div>
+        <div className="w-full max-w-sm h-64 flex items-center justify-center relative">
+          <Image
+            src={`/animals/${currentCombination.color.toLowerCase()} ${currentCombination.animal.toLowerCase()}.png`}
+            alt={`${currentCombination.color} ${currentCombination.animal}`}
+            width={500}
+            height={320}
+          />
         </div>
       </div>
-      
-      {/* Check that nextCombination is not an empty object before rendering */}
+
       {nextCombination.color && nextCombination.animal && (
-        <p className="text-xl font-light pb-8">
+        <p className="text-xl text-black font-light pb-8">
           I see a {nextCombination.color} {nextCombination.animal} looking at me.
         </p>
       )}
