@@ -82,8 +82,8 @@ function capitalizeFirstLetter(string) {
 }
 
   return (
-    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-2 bg-cover" style={{ backgroundColor: colors.bgColor }}>
-<h1 className="text-2xl font-bold pt-8 self-start" style={{ color: colors.topTextColor }}>
+    <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-20 bg-cover" style={{ backgroundColor: colors.bgColor }}>
+<h1 className="text-2xl font-bold self-start" style={{ color: colors.topTextColor }}>
   {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, <br/>What do you see?
 </h1>
 
@@ -102,7 +102,7 @@ function capitalizeFirstLetter(string) {
       </div>
 
       {nextCombination.color && nextCombination.animal && (
-        <p className="text-2xl font-light pb-4 mb-10 self-end" style={{ color: colors.bottomTextColor }}>
+        <p className="text-2xl font-light self-end" style={{ color: colors.bottomTextColor }}>
           I see a {nextCombination.color} {nextCombination.animal} looking at me.
         </p>
       )}
