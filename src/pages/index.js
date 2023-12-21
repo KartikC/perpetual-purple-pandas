@@ -102,7 +102,7 @@ function capitalizeFirstLetter(string) {
       </div>
 
       {nextCombination.color && nextCombination.animal && (
-        <p className="text-xl font-light self-end" style={{ color: colors.bottomTextColor }}>
+        <p className="text-xl font-light self-end pb-10" style={{ color: colors.bottomTextColor }}>
           I see a {nextCombination.color} {nextCombination.animal} looking at me.
         </p>
       )}
