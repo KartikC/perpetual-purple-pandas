@@ -76,11 +76,16 @@ export default function Home() {
     prepareNextCombination();
   };
 
+  // Helper function to capitalize the first letter
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
   return (
     <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center p-2 bg-cover" style={{ backgroundColor: colors.bgColor }}>
-      <h1 className="text-xl font-bold pt-8 self-start" style={{ color: colors.topTextColor }}>
-        {currentCombination.color} {currentCombination.animal}, {currentCombination.color} {currentCombination.animal}, What do you see?
-      </h1>
+<h1 className="text-2xl font-bold pt-8 mt-10 ml-5 self-start" style={{ color: colors.topTextColor }}>
+  {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, <br/>What do you see?
+</h1>
 
       {/* Image container - flex-grow to take available space, max-w and max-h to prevent overflow */}
       <div className="flex-grow w-full flex items-center justify-center p-2">
@@ -96,13 +101,13 @@ export default function Home() {
         </div>
       </div>
 
-      
-
       {nextCombination.color && nextCombination.animal && (
-        <p className="text-xl font-light pb-4 self-end" style={{ color: colors.bottomTextColor }}>
+        <p className="text-2xl font-light pb-4 mb-10 mr-5 self-end" style={{ color: colors.bottomTextColor }}>
           I see a {nextCombination.color} {nextCombination.animal} looking at me.
         </p>
       )}
     </div>
   );
+
+  
 }
