@@ -100,7 +100,7 @@ export default function Home() {
 
       {nextCombination.color && nextCombination.animal && (
         <p className="text-xl font-light pb-4 self-end" style={{ color: colors.bottomTextColor }}>
-          Next: {nextCombination.color} {nextCombination.animal} looking at me.
+          I see a {nextCombination.color} {nextCombination.animal} looking at me.
         </p>
       )}
     </div>
