@@ -84,7 +84,7 @@ function capitalizeFirstLetter(string) {
   return (
     <div onClick={goToNextPage} className="flex flex-col h-screen justify-between items-center pl-5 pr-5 pt-5 pb-20 bg-cover" style={{ backgroundColor: colors.bgColor }}>
 <h1 className="text-2xl font-bold self-start" style={{ color: colors.topTextColor }}>
-  {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, <br/>What do you see?
+  {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, {capitalizeFirstLetter(currentCombination.color)} {capitalizeFirstLetter(currentCombination.animal)}, What do you see?
 </h1>
 
       {/* Image container - flex-grow to take available space, max-w and max-h to prevent overflow */}
@@ -102,7 +102,7 @@ function capitalizeFirstLetter(string) {
       </div>
 
       {nextCombination.color && nextCombination.animal && (
-        <p className="text-2xl font-light self-end" style={{ color: colors.bottomTextColor }}>
+        <p className="text-xl font-light self-end" style={{ color: colors.bottomTextColor }}>
           I see a {nextCombination.color} {nextCombination.animal} looking at me.
         </p>
       )}
