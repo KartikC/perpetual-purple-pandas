@@ -73,6 +73,31 @@ export default function Home() {
     }
   }, [loading]);
 
+  useEffect(() => {
+    // Load Ko-fi script and initialize the widget
+    const scriptId = "ko-fi-script";
+
+    if (document.getElementById(scriptId)) {
+      // Script already loaded
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = "https://storage.ko-fi.com/cdn/scripts/overlay-widget.js";
+    script.async = true;
+    script.onload = () => {
+      kofiWidgetOverlay.draw("sathaxe", {
+        type: "floating-chat",
+        "floating-chat.donateButton.text": "Tip Me",
+        "floating-chat.donateButton.background-color": "#323842",
+        "floating-chat.donateButton.text-color": "#fff",
+      });
+    };
+
+    document.body.appendChild(script);
+  }, []);
+
   const goToNextPage = () => {
     setCurrentCombination(nextCombination);
     setLoading(true); // Ensure loading is true while preparing the next combination
