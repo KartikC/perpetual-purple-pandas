@@ -147,7 +147,7 @@ export default function Home() {
 
       {!loading && nextCombination.color && nextCombination.animal && (
         <p
-          className="w-1/2 text-l font-bold self-end pb-20"
+          className="w-1/2 text-l font-bold self-end pb-10"
           style={{ color: colors.bottomTextColor }}
         >
           I see a {nextCombination.color} {nextCombination.animal} looking at
