@@ -16,7 +16,12 @@
   }
 }
 
+/* Critical above-the-fold styles */
 body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  overflow: hidden;
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
       to bottom,
@@ -24,4 +29,104 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+  /* GPU acceleration for smooth scrolling */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  /* Optimize font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.loading-critical {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  z-index: 9999;
+}
+
+/* Smooth transitions utility classes */
+.smooth-transition {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, color, background-color, transform;
+}
+
+.smooth-bg-transition {
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: background-color;
+}
+
+.smooth-text-transition {
+  transition: opacity 0.4s ease-in-out, color 0.4s ease-in-out;
+  will-change: opacity, color;
+}
+
+.smooth-image-transition {
+  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+  will-change: opacity, transform;
+}
+
+/* Prevent layout shifts */
+.fixed-height-text {
+  min-height: 1.5em;
+  display: block;
+}
+
+.fixed-height-paragraph {
+  min-height: 3em;
+  display: block;
+}
+
+/* Image optimization */
+.optimized-image {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus optimization */
+*:focus {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* Prevent text selection for better UX */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Loading animation */
+.loading-fade {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
