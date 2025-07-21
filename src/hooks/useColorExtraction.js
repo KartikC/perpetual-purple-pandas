@@ -150,11 +150,81 @@ export const useColorExtraction = () => {
   }, [initWorker]);
 
   const preloadColors = useCallback(async (imageUrl) => {
-    if (!colorCache.has(imageUrl)) {
-      await extractColors(imageUrl, false);
+    // Check cache first
+    if (colorCache.has(imageUrl)) {
+      return colorCache.get(imageUrl);
     }
-    return colorCache.get(imageUrl) || DEFAULT_COLORS;
-  }, [extractColors]);
+
+    // Extract colors without updating current state
+    return new Promise((resolve) => {
+      try {
+        initWorker();
+
+        if (workerRef.current) {
+          // Use web worker for better performance
+          const img = new Image();
+          img.crossOrigin = 'Anonymous';
+          
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Resize for performance while maintaining aspect ratio
+            const maxSize = 150;
+            const scale = Math.min(maxSize / img.width, maxSize / img.height);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            // Create a one-time message handler for this specific preload
+            const handleMessage = (e) => {
+              const { success, palette, id } = e.data;
+              if (id === imageUrl) {
+                workerRef.current.removeEventListener('message', handleMessage);
+                
+                if (success) {
+                  const newColors = {
+                    bgColor: `rgb(${palette[0].join(',')})`,
+                    topTextColor: `rgb(${palette[1].join(',')})`,
+                    bottomTextColor: `rgb(${palette[2].join(',')})`,
+                  };
+                  // Cache but don't update current colors
+                  colorCache.set(imageUrl, newColors);
+                  resolve(newColors);
+                } else {
+                  resolve(DEFAULT_COLORS);
+                }
+              }
+            };
+            
+            workerRef.current.addEventListener('message', handleMessage);
+            workerRef.current.postMessage({ imageData, id: imageUrl });
+          };
+          
+          img.onerror = () => {
+            resolve(DEFAULT_COLORS);
+          };
+          
+          img.src = imageUrl;
+        } else {
+          // Fallback to main thread
+          import('./colorExtractionFallback').then(({ extractColorsMainThread }) => {
+            extractColorsMainThread(imageUrl).then(colors => {
+              colorCache.set(imageUrl, colors);
+              resolve(colors);
+            }).catch(() => {
+              resolve(DEFAULT_COLORS);
+            });
+          });
+        }
+      } catch (error) {
+        console.error('Preload color extraction error:', error);
+        resolve(DEFAULT_COLORS);
+      }
+    });
+  }, [initWorker]);
 
   // Cleanup
   const cleanup = useCallback(() => {

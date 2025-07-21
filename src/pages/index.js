@@ -117,14 +117,23 @@ export default function Home() {
       clearTimeout(transitionTimeoutRef.current);
     }
 
-    // Immediately apply preloaded colors if available
-    if (nextColors) {
-      setColors(nextColors);
-    }
-
-    transitionTimeoutRef.current = setTimeout(() => {
+    transitionTimeoutRef.current = setTimeout(async () => {
       // Update combination
       setCurrentCombination(nextCombination);
+      
+      // Apply preloaded colors or extract new ones
+      const newCurrentImageUrl = getImageUrl(nextCombination.color, nextCombination.animal);
+      
+      if (nextColors) {
+        // Use preloaded colors immediately for smooth transition
+        setColors(nextColors);
+      } else {
+        // Fallback: extract colors if not preloaded
+        await extractColors(newCurrentImageUrl);
+      }
+      
+      // Reset nextColors since we've used them
+      setNextColors(null);
       
       // Generate and preload next combination
       const newNext = generateNextCombination();
@@ -149,7 +158,9 @@ export default function Home() {
     nextCombination, 
     generateNextCombination, 
     preloadNext, 
-    setColors
+    setColors,
+    getImageUrl,
+    extractColors
   ]);
 
   // Initialize Ko-fi widget
