@@ -1,159 +1,322 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { initialColors, initialAnimals } from "../constants/data";
 import Image from "next/image";
-import ColorThief from "colorthief";
+import { useColorExtraction } from "../hooks/useColorExtraction";
+import { useImagePreloader } from "../hooks/useImagePreloader";
+
+// Memoized utility functions outside component to prevent recreations
+const capitalizeFirstLetter = (string) => {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+const shuffleArray = (array) => {
+  const newArray = array.slice();
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+const pickRandomItem = (array) => {
+  return array[Math.floor(Math.random() * array.length)];
+};
 
 export default function Home() {
+  // State management
   const [currentCombination, setCurrentCombination] = useState({
     color: "purple",
     animal: "panda",
   });
   const [nextCombination, setNextCombination] = useState({});
   const [usedAnimals, setUsedAnimals] = useState(["panda"]);
-  const [colors, setColors] = useState({
-    bgColor: "white",
-    topTextColor: "black",
-    bottomTextColor: "grey",
-  });
-  const [loading, setLoading] = useState(true); // Set initial loading to true
+  const [loading, setLoading] = useState(true);
+  const [transitioning, setTransitioning] = useState(false);
+  const [nextColors, setNextColors] = useState(null);
+  const [kofiLoaded, setKofiLoaded] = useState(false);
 
-  const imgRef = useRef(null);
+  // Custom hooks
+  const { 
+    colors, 
+    extractColors, 
+    preloadColors, 
+    setColors, 
+    cleanup: cleanupColors 
+  } = useColorExtraction();
+  
+  const { 
+    preloadImage, 
+    getImageUrl, 
+    isImageCached 
+  } = useImagePreloader();
 
-  const shuffleArray = useCallback((array) => {
-    const newArray = array.slice();
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
-  }, []);
+  // Refs
+  const transitionTimeoutRef = useRef(null);
+  const preloadTimeoutRef = useRef(null);
 
-  const pickNewAnimal = useCallback((animals) => {
-    return animals[Math.floor(Math.random() * animals.length)];
-  }, []);
+  // Memoized values
+  const currentImageUrl = useMemo(() => 
+    getImageUrl(currentCombination.color, currentCombination.animal),
+    [currentCombination, getImageUrl]
+  );
 
-  const prepareNextCombination = useCallback(() => {
+  const nextImageUrl = useMemo(() => 
+    nextCombination.color && nextCombination.animal 
+      ? getImageUrl(nextCombination.color, nextCombination.animal)
+      : null,
+    [nextCombination, getImageUrl]
+  );
+
+  // Generate next combination
+  const generateNextCombination = useCallback(() => {
     let availableAnimals = initialAnimals.filter(
       (animal) => !usedAnimals.includes(animal)
     );
+    
     if (availableAnimals.length === 0) {
       availableAnimals = shuffleArray(initialAnimals);
-      setUsedAnimals(["panda"]);
+      setUsedAnimals([currentCombination.animal]);
     }
-    const nextAnimal = pickNewAnimal(availableAnimals);
-    const nextColor = pickNewAnimal(initialColors);
 
-    setNextCombination({ color: nextColor, animal: nextAnimal });
-    setUsedAnimals((prevUsedAnimals) => [...prevUsedAnimals, nextAnimal]);
-  }, [usedAnimals, pickNewAnimal, shuffleArray]);
+    const nextAnimal = pickRandomItem(availableAnimals);
+    const nextColor = pickRandomItem(initialColors);
 
-  const updateColors = () => {
-    if (imgRef.current) {
-      const imgEl = imgRef.current.querySelector("img");
-      if (imgEl && imgEl.complete) {
-        const colorThief = new ColorThief();
-        const palette = colorThief.getPalette(imgEl, 3);
-        setColors({
-          bgColor: `rgb(${palette[0].join(",")})`,
-          topTextColor: `rgb(${palette[1].join(",")})`,
-          bottomTextColor: `rgb(${palette[2].join(",")})`,
-        });
-        setLoading(false); // Update loading state here as well
+    const newCombination = { color: nextColor, animal: nextAnimal };
+    setNextCombination(newCombination);
+    setUsedAnimals((prev) => [...prev, nextAnimal]);
+
+    return newCombination;
+  }, [usedAnimals, currentCombination.animal]);
+
+  // Preload next image and colors
+  const preloadNext = useCallback(async (combination) => {
+    if (!combination.color || !combination.animal) return;
+
+    const imageUrl = getImageUrl(combination.color, combination.animal);
+    
+    try {
+      // Preload image with high priority
+      await preloadImage(imageUrl, 'high');
+      
+      // Preload colors
+      const preloadedColors = await preloadColors(imageUrl);
+      setNextColors(preloadedColors);
+    } catch (error) {
+      console.warn('Failed to preload next combination:', error);
+    }
+  }, [getImageUrl, preloadImage, preloadColors]);
+
+  // Smooth transition to next combination
+  const goToNextPage = useCallback(() => {
+    if (transitioning || loading) return;
+    
+    setTransitioning(true);
+
+    // Clear any existing timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+
+    transitionTimeoutRef.current = setTimeout(async () => {
+      // Update combination
+      setCurrentCombination(nextCombination);
+      
+      // Apply preloaded colors or extract new ones
+      const newCurrentImageUrl = getImageUrl(nextCombination.color, nextCombination.animal);
+      
+      if (nextColors) {
+        // Use preloaded colors immediately for smooth transition
+        setColors(nextColors);
+      } else {
+        // Fallback: extract colors if not preloaded
+        await extractColors(newCurrentImageUrl);
       }
-    }
-  };
+      
+      // Reset nextColors since we've used them
+      setNextColors(null);
+      
+      // Generate and preload next combination
+      const newNext = generateNextCombination();
+      
+      // Preload the next one after a short delay
+      if (preloadTimeoutRef.current) {
+        clearTimeout(preloadTimeoutRef.current);
+      }
+      preloadTimeoutRef.current = setTimeout(() => {
+        preloadNext(newNext);
+      }, 100);
 
+      // End transition
+      setTimeout(() => {
+        setTransitioning(false);
+      }, 200);
+    }, 300);
+  }, [
+    transitioning, 
+    loading, 
+    nextColors, 
+    nextCombination, 
+    generateNextCombination, 
+    preloadNext, 
+    setColors,
+    getImageUrl,
+    extractColors
+  ]);
+
+  // Initialize Ko-fi widget
   useEffect(() => {
-    prepareNextCombination();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!loading) {
-      updateColors();
-    }
-  }, [loading]);
-
-  useEffect(() => {
-    // Load Ko-fi script and initialize the widget
-    const scriptId = "ko-fi-script";
-
-    if (document.getElementById(scriptId)) {
-      // Script already loaded
-      return;
-    }
+    if (kofiLoaded) return;
 
     const script = document.createElement("script");
-    script.id = scriptId;
     script.src = "https://storage.ko-fi.com/cdn/scripts/overlay-widget.js";
     script.async = true;
     script.onload = () => {
-      kofiWidgetOverlay.draw("sathaxe", {
-        type: "floating-chat",
-        "floating-chat.donateButton.text": "Tip Me",
-        "floating-chat.donateButton.background-color": "#323842",
-        "floating-chat.donateButton.text-color": "#fff",
-      });
+      if (typeof kofiWidgetOverlay !== 'undefined') {
+        kofiWidgetOverlay.draw("sathaxe", {
+          type: "floating-chat",
+          "floating-chat.donateButton.text": "Tip Me",
+          "floating-chat.donateButton.background-color": "#323842",
+          "floating-chat.donateButton.text-color": "#fff",
+        });
+        setKofiLoaded(true);
+      }
     };
 
     document.body.appendChild(script);
-  }, []);
 
-  const goToNextPage = () => {
-    setCurrentCombination(nextCombination);
-    setLoading(true); // Ensure loading is true while preparing the next combination
-    prepareNextCombination();
-  };
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, [kofiLoaded]);
 
-  function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
+  // Initial setup
+  useEffect(() => {
+    const initialize = async () => {
+      // Generate next combination
+      const next = generateNextCombination();
+      
+      // Extract colors from current image
+      await extractColors(currentImageUrl);
+      setLoading(false);
+      
+      // Preload next combination
+      setTimeout(() => {
+        preloadNext(next);
+      }, 500);
+    };
 
-  const handleImageLoad = () => {
-    setLoading(false); // Image loaded, set loading to false
-  };
+    initialize();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupColors();
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+      if (preloadTimeoutRef.current) {
+        clearTimeout(preloadTimeoutRef.current);
+      }
+    };
+  }, [cleanupColors]);
+
+  // Handle image load
+  const handleImageLoad = useCallback(() => {
+    if (loading) {
+      setLoading(false);
+    }
+  }, [loading]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.code === 'Space' || event.key === 'Enter') {
+        event.preventDefault();
+        goToNextPage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [goToNextPage]);
 
   return (
     <div
       onClick={goToNextPage}
-      className="flex flex-col h-screen justify-between items-center pl-5 pr-5 pt-5 pb-20 bg-cover"
+      className="flex flex-col h-screen cursor-pointer no-select smooth-bg-transition"
       style={{ backgroundColor: colors.bgColor }}
+      role="button"
+      tabIndex={0}
+      aria-label="Click or press space to see next animal combination"
     >
-      <h1
-        className="text-2xl font-bold self-start"
-        style={{ color: colors.topTextColor }}
-      >
-        {!loading && (
-          <>
-            {capitalizeFirstLetter(currentCombination.color)}{" "}
-            {capitalizeFirstLetter(currentCombination.animal)},{" "}
-            {capitalizeFirstLetter(currentCombination.color)}{" "}
-            {capitalizeFirstLetter(currentCombination.animal)}, What do you see?
-          </>
-        )}
-      </h1>
-
-      <div className="flex-grow w-full flex items-center justify-center p-2">
-        <div className="relative w-full h-3/4" ref={imgRef}>
-          <Image
-            src={`https://raw.githubusercontent.com/KartikC/perpetual-purple-pandas/main/public/animals/${currentCombination.color.toLowerCase()}%20${currentCombination.animal.toLowerCase()}.png`}
-            alt={`${currentCombination.color} ${currentCombination.animal}`}
-            layout="fill"
-            objectFit="contain"
-            priority={true}
-            onLoad={handleImageLoad}
-          />
-        </div>
-      </div>
-
-      {!loading && nextCombination.color && nextCombination.animal && (
-        <p
-          className="w-1/2 text-l font-bold self-end pb-10"
-          style={{ color: colors.bottomTextColor }}
+      {/* Header */}
+      <header className="h-16 pl-5 pr-5 pt-5">
+        <h1
+          className="text-2xl font-bold fixed-height-text smooth-text-transition loading-fade enhanced-text"
+          style={{ 
+            color: colors.topTextColor,
+            opacity: transitioning ? 0.7 : 1,
+          }}
         >
-          I see a {nextCombination.color} {nextCombination.animal} looking at
-          me.
+          {!loading && (
+            <>
+              {capitalizeFirstLetter(currentCombination.color)}{" "}
+              {capitalizeFirstLetter(currentCombination.animal)},{" "}
+              {capitalizeFirstLetter(currentCombination.color)}{" "}
+              {capitalizeFirstLetter(currentCombination.animal)}, What do you see?
+            </>
+          )}
+        </h1>
+      </header>
+
+      {/* Main content */}
+      <main className="flex-1 flex items-center justify-center p-2" style={{ minHeight: '60vh' }}>
+        <div className="relative w-full h-full" style={{ maxHeight: '70vh' }}>
+          {!loading && (
+            <Image
+              src={currentImageUrl}
+              alt={`${currentCombination.color} ${currentCombination.animal}`}
+              fill
+              style={{
+                objectFit: 'contain',
+              }}
+              className={`smooth-image-transition optimized-image ${
+                transitioning ? 'opacity-70' : 'opacity-100'
+              }`}
+              priority={true}
+              onLoad={handleImageLoad}
+              quality={85}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+            />
+          )}
+          
+          {loading && (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-xl" style={{ color: colors.topTextColor }}>
+                Loading...
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="h-24 pl-5 pr-5 pb-10 flex justify-end">
+        <p
+          className="w-1/2 text-l font-bold fixed-height-paragraph smooth-text-transition loading-fade enhanced-text"
+          style={{ 
+            color: colors.bottomTextColor,
+            opacity: transitioning ? 0.7 : 1,
+          }}
+        >
+          {!loading && nextCombination.color && nextCombination.animal && (
+            <>I see a {nextCombination.color} {nextCombination.animal} looking at me.</>
+          )}
         </p>
-      )}
+      </footer>
     </div>
   );
 }
