@@ -255,7 +255,7 @@ export default function Home() {
       {/* Header */}
       <header className="h-16 pl-5 pr-5 pt-5">
         <h1
-          className="text-2xl font-bold fixed-height-text smooth-text-transition loading-fade"
+          className="text-2xl font-bold fixed-height-text smooth-text-transition loading-fade enhanced-text"
           style={{ 
             color: colors.topTextColor,
             opacity: transitioning ? 0.7 : 1,
@@ -306,7 +306,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="h-24 pl-5 pr-5 pb-10 flex justify-end">
         <p
-          className="w-1/2 text-l font-bold fixed-height-paragraph smooth-text-transition loading-fade"
+          className="w-1/2 text-l font-bold fixed-height-paragraph smooth-text-transition loading-fade enhanced-text"
           style={{ 
             color: colors.bottomTextColor,
             opacity: transitioning ? 0.7 : 1,

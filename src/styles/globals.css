@@ -66,8 +66,17 @@ body {
 }
 
 .smooth-text-transition {
-  transition: opacity 0.4s ease-in-out, color 0.4s ease-in-out;
-  will-change: opacity, color;
+  transition: opacity 0.4s ease-in-out, color 0.4s ease-in-out, text-shadow 0.4s ease-in-out;
+  will-change: opacity, color, text-shadow;
+}
+
+/* Enhanced text visibility */
+.enhanced-text {
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 0 8px rgba(0, 0, 0, 0.1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .smooth-image-transition {

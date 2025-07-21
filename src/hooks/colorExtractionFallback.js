@@ -1,3 +1,5 @@
+import { extractAccessibleColors } from './colorUtils';
+
 // Fallback color extraction for when web workers are not available
 export const extractColorsMainThread = async (imageUrl) => {
   return new Promise((resolve) => {
@@ -18,7 +20,7 @@ export const extractColorsMainThread = async (imageUrl) => {
         const imageData = ctx.getImageData(0, 0, size, size);
         const data = imageData.data;
         
-        // Simple and fast color extraction
+        // Enhanced color extraction with accessibility
         const colorCounts = {};
         const step = 8; // Sample fewer pixels for performance
         
@@ -34,26 +36,10 @@ export const extractColorsMainThread = async (imageUrl) => {
           }
         }
         
-        // Get top 3 colors
-        const sortedColors = Object.entries(colorCounts)
-          .sort(([, a], [, b]) => b - a)
-          .slice(0, 3)
-          .map(([color]) => color.split(',').map(Number));
+        // Use the accessible color extraction
+        const accessibleColors = extractAccessibleColors(colorCounts);
+        resolve(accessibleColors);
         
-        if (sortedColors.length >= 3) {
-          resolve({
-            bgColor: `rgb(${sortedColors[0].join(',')})`,
-            topTextColor: `rgb(${sortedColors[1].join(',')})`,
-            bottomTextColor: `rgb(${sortedColors[2].join(',')})`,
-          });
-        } else {
-          // Fallback colors
-          resolve({
-            bgColor: 'rgb(240, 240, 240)',
-            topTextColor: 'rgb(50, 50, 50)',
-            bottomTextColor: 'rgb(100, 100, 100)',
-          });
-        }
       } catch (error) {
         console.error('Fallback color extraction error:', error);
         resolve({
