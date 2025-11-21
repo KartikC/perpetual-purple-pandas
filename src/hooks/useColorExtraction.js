@@ -3,8 +3,8 @@ import colorMap from '../constants/color-map.json';
 
 const DEFAULT_COLORS = {
   bgColor: 'rgb(240, 240, 240)',
-  topTextColor: 'rgb(50, 50, 50)',
-  bottomTextColor: 'rgb(100, 100, 100)',
+  topTextColor: 'rgb(100, 100, 100)',
+  bottomTextColor: 'rgb(50, 50, 50)',
 };
 
 export const useColorExtraction = () => {
@@ -31,7 +31,11 @@ export const useColorExtraction = () => {
           bottomTextColor: "grey"
         });
       } else {
-        setColors(mappedColors);
+        setColors({
+          bgColor: mappedColors.bgColor,
+          topTextColor: mappedColors.bottomTextColor,
+          bottomTextColor: mappedColors.topTextColor
+        });
       }
     } else {
       setColors(DEFAULT_COLORS);
@@ -45,7 +49,14 @@ export const useColorExtraction = () => {
     const decodedFilename = decodeURIComponent(filename);
     const mappedColors = colorMap[decodedFilename];
 
-    return mappedColors || DEFAULT_COLORS;
+    if (mappedColors) {
+      return {
+        bgColor: mappedColors.bgColor,
+        topTextColor: mappedColors.bottomTextColor,
+        bottomTextColor: mappedColors.topTextColor
+      };
+    }
+    return DEFAULT_COLORS;
   }, []);
 
   const cleanup = useCallback(() => { }, []);
