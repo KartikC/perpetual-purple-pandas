@@ -9,12 +9,6 @@ const nextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: [],
-    outputFileTracingExcludes: {
-      '*': [
-        'public/animals/**/*',
-        './public/animals/**/*',
-      ],
-    },
   },
 
   // Compiler optimizations
