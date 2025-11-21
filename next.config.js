@@ -5,17 +5,23 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig = {
   reactStrictMode: true,
-  
+
   // Performance optimizations
   experimental: {
     optimizePackageImports: [],
+    outputFileTracingExcludes: {
+      '*': [
+        'public/animals/**/*',
+        './public/animals/**/*',
+      ],
+    },
   },
-  
+
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  
+
   // Image optimization
   images: {
     remotePatterns: [
@@ -29,12 +35,12 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 86400, // 24 hours
   },
-  
+
   // Build optimizations
   poweredByHeader: false,
   generateEtags: false,
   compress: true,
-  
+
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
     // Optimize for production
@@ -48,18 +54,12 @@ const nextConfig = {
           test: /[\\/]node_modules[\\/](colorthief)[\\/]/,
           priority: 20,
         },
-        fabric: {
-          name: 'fabric',
-          chunks: 'all',
-          test: /[\\/]node_modules[\\/](fabric)[\\/]/,
-          priority: 20,
-        },
       };
     }
-    
+
     return config;
   },
-  
+
   // Headers for better caching
   async headers() {
     return [
