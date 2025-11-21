@@ -22,6 +22,8 @@ const pickRandomItem = (array) => {
   return array[Math.floor(Math.random() * array.length)];
 };
 
+import KoFiWidget from "../components/KoFiWidget";
+
 export default function Home() {
   // State management
   const [currentCombination, setCurrentCombination] = useState({
@@ -36,18 +38,18 @@ export default function Home() {
   const [kofiLoaded, setKofiLoaded] = useState(false);
 
   // Custom hooks
-  const { 
-    colors, 
-    extractColors, 
-    preloadColors, 
-    setColors, 
-    cleanup: cleanupColors 
+  const {
+    colors,
+    extractColors,
+    preloadColors,
+    setColors,
+    cleanup: cleanupColors
   } = useColorExtraction();
-  
-  const { 
-    preloadImage, 
-    getImageUrl, 
-    isImageCached 
+
+  const {
+    preloadImage,
+    getImageUrl,
+    isImageCached
   } = useImagePreloader();
 
   // Refs
@@ -55,13 +57,13 @@ export default function Home() {
   const preloadTimeoutRef = useRef(null);
 
   // Memoized values
-  const currentImageUrl = useMemo(() => 
+  const currentImageUrl = useMemo(() =>
     getImageUrl(currentCombination.color, currentCombination.animal),
     [currentCombination, getImageUrl]
   );
 
-  const nextImageUrl = useMemo(() => 
-    nextCombination.color && nextCombination.animal 
+  const nextImageUrl = useMemo(() =>
+    nextCombination.color && nextCombination.animal
       ? getImageUrl(nextCombination.color, nextCombination.animal)
       : null,
     [nextCombination, getImageUrl]
@@ -72,7 +74,7 @@ export default function Home() {
     let availableAnimals = initialAnimals.filter(
       (animal) => !usedAnimals.includes(animal)
     );
-    
+
     if (availableAnimals.length === 0) {
       availableAnimals = shuffleArray(initialAnimals);
       setUsedAnimals([currentCombination.animal]);
@@ -93,11 +95,11 @@ export default function Home() {
     if (!combination.color || !combination.animal) return;
 
     const imageUrl = getImageUrl(combination.color, combination.animal);
-    
+
     try {
       // Preload image with high priority
       await preloadImage(imageUrl, 'high');
-      
+
       // Preload colors
       const preloadedColors = await preloadColors(imageUrl);
       setNextColors(preloadedColors);
@@ -109,7 +111,7 @@ export default function Home() {
   // Smooth transition to next combination
   const goToNextPage = useCallback(() => {
     if (transitioning || loading) return;
-    
+
     setTransitioning(true);
 
     // Clear any existing timeout
@@ -120,10 +122,10 @@ export default function Home() {
     transitionTimeoutRef.current = setTimeout(async () => {
       // Update combination
       setCurrentCombination(nextCombination);
-      
+
       // Apply preloaded colors or extract new ones
       const newCurrentImageUrl = getImageUrl(nextCombination.color, nextCombination.animal);
-      
+
       if (nextColors) {
         // Use preloaded colors immediately for smooth transition
         setColors(nextColors);
@@ -131,13 +133,13 @@ export default function Home() {
         // Fallback: extract colors if not preloaded
         await extractColors(newCurrentImageUrl);
       }
-      
+
       // Reset nextColors since we've used them
       setNextColors(null);
-      
+
       // Generate and preload next combination
       const newNext = generateNextCombination();
-      
+
       // Preload the next one after a short delay
       if (preloadTimeoutRef.current) {
         clearTimeout(preloadTimeoutRef.current);
@@ -152,55 +154,32 @@ export default function Home() {
       }, 200);
     }, 300);
   }, [
-    transitioning, 
-    loading, 
-    nextColors, 
-    nextCombination, 
-    generateNextCombination, 
-    preloadNext, 
+    transitioning,
+    loading,
+    nextColors,
+    nextCombination,
+    generateNextCombination,
+    preloadNext,
     setColors,
     getImageUrl,
     extractColors
   ]);
 
   // Initialize Ko-fi widget
-  useEffect(() => {
-    if (kofiLoaded) return;
+  // Removed manual script injection in favor of KoFiWidget component
 
-    const script = document.createElement("script");
-    script.src = "https://storage.ko-fi.com/cdn/scripts/overlay-widget.js";
-    script.async = true;
-    script.onload = () => {
-      if (typeof kofiWidgetOverlay !== 'undefined') {
-        kofiWidgetOverlay.draw("sathaxe", {
-          type: "floating-chat",
-          "floating-chat.donateButton.text": "Tip Me",
-          "floating-chat.donateButton.background-color": "#323842",
-          "floating-chat.donateButton.text-color": "#fff",
-        });
-        setKofiLoaded(true);
-      }
-    };
-
-    document.body.appendChild(script);
-
-    return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
-  }, [kofiLoaded]);
+  // Initial setup
 
   // Initial setup
   useEffect(() => {
     const initialize = async () => {
       // Generate next combination
       const next = generateNextCombination();
-      
+
       // Extract colors from current image
       await extractColors(currentImageUrl);
       setLoading(false);
-      
+
       // Preload next combination
       setTimeout(() => {
         preloadNext(next);
@@ -256,7 +235,7 @@ export default function Home() {
       <header className="h-16 pl-5 pr-5 pt-5">
         <h1
           className="text-2xl font-bold fixed-height-text smooth-text-transition loading-fade enhanced-text"
-          style={{ 
+          style={{
             color: colors.topTextColor,
             opacity: transitioning ? 0.7 : 1,
           }}
@@ -283,16 +262,15 @@ export default function Home() {
               style={{
                 objectFit: 'contain',
               }}
-              className={`smooth-image-transition optimized-image ${
-                transitioning ? 'opacity-70' : 'opacity-100'
-              }`}
+              className={`smooth-image-transition optimized-image ${transitioning ? 'opacity-70' : 'opacity-100'
+                }`}
               priority={true}
               onLoad={handleImageLoad}
               quality={85}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
             />
           )}
-          
+
           {loading && (
             <div className="flex items-center justify-center h-full">
               <div className="text-xl" style={{ color: colors.topTextColor }}>
@@ -307,7 +285,7 @@ export default function Home() {
       <footer className="h-24 pl-5 pr-5 pb-10 flex justify-end">
         <p
           className="w-1/2 text-l font-bold fixed-height-paragraph smooth-text-transition loading-fade enhanced-text"
-          style={{ 
+          style={{
             color: colors.bottomTextColor,
             opacity: transitioning ? 0.7 : 1,
           }}
@@ -317,6 +295,8 @@ export default function Home() {
           )}
         </p>
       </footer>
+
+      <KoFiWidget />
     </div>
   );
 }
