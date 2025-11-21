@@ -282,7 +282,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="flex-none p-6 md:p-10 flex justify-center items-center z-10">
+      <footer className="flex-none p-6 pb-20 md:p-10 flex justify-center items-center z-10">
         <p
           className="text-xl md:text-3xl font-bold text-center smooth-text-transition loading-fade enhanced-text max-w-3xl mx-auto"
           style={{
