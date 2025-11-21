@@ -253,7 +253,7 @@ export default function Home() {
 
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center p-4 md:p-8 relative w-full overflow-hidden">
-        <div className="relative w-full h-full max-w-5xl mx-auto flex items-center justify-center" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <div className="relative w-full h-full max-w-5xl mx-auto" style={{ maxHeight: 'calc(100vh - 200px)', minHeight: '40vh' }}>
           {!loading && (
             <Image
               src={currentImageUrl}
@@ -261,7 +261,6 @@ export default function Home() {
               fill
               style={{
                 objectFit: 'contain',
-                padding: '20px',
               }}
               className={`smooth-image-transition optimized-image ${transitioning ? 'opacity-70' : 'opacity-100'
                 }`}
