@@ -4,6 +4,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig = {
+  output: process.env.EXPORT === 'true' ? 'export' : undefined,
   reactStrictMode: true,
 
   // Exclude large directories from build tracing to prevent stack overflow
@@ -39,25 +40,6 @@ const nextConfig = {
   poweredByHeader: false,
   generateEtags: false,
   compress: true,
-
-  // Webpack optimizations
-  webpack: (config, { dev, isServer }) => {
-    // Optimize for production
-    if (!dev && !isServer) {
-      config.optimization.splitChunks.chunks = 'all';
-      config.optimization.splitChunks.cacheGroups = {
-        ...config.optimization.splitChunks.cacheGroups,
-        colorThief: {
-          name: 'color-thief',
-          chunks: 'all',
-          test: /[\\/]node_modules[\\/](colorthief)[\\/]/,
-          priority: 20,
-        },
-      };
-    }
-
-    return config;
-  },
 
   // Headers for better caching
   async headers() {
