@@ -222,6 +222,14 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [goToNextPage]);
 
+  // Update theme color dynamically
+  useEffect(() => {
+    const metaThemeColor = document.querySelector("meta[name='theme-color']");
+    if (metaThemeColor && colors.bgColor) {
+      metaThemeColor.setAttribute('content', colors.bgColor);
+    }
+  }, [colors.bgColor]);
+
   return (
     <div
       onClick={goToNextPage}
