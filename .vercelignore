@@ -1,0 +1,11 @@
+# Build artifacts
+.next
+node_modules
+.git
+
+# Development files
+.env.local
+.env.development.local
+
+# Don't ignore public/animals - these files are needed for the app
+# The next.config.js outputFileTracingExcludes handles the build trace issue

@@ -6,6 +6,11 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   reactStrictMode: true,
 
+  // Exclude large directories from build tracing to prevent stack overflow
+  outputFileTracingExcludes: {
+    '*': ['public/animals/**/*'],
+  },
+
   // Performance optimizations
   experimental: {
     optimizePackageImports: [],
