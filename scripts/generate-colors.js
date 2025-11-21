@@ -23,8 +23,8 @@ async function generateColorMap() {
                 const palette = await ColorThief.getPalette(filePath, 3);
                 colorMap[file] = {
                     bgColor: `rgb(${palette[0].join(',')})`,
-                    topTextColor: `rgb(${palette[1].join(',')})`,
-                    bottomTextColor: `rgb(${palette[2].join(',')})`
+                    topTextColor: `rgb(${palette[2].join(',')})`,
+                    bottomTextColor: `rgb(${palette[1].join(',')})`
                 };
             } catch (err) {
                 console.error(`Error processing ${file}:`, err);

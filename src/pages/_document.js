@@ -10,8 +10,9 @@ export default function Document() {
         <link rel="dns-prefetch" href="//storage.ko-fi.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet" />
         <link rel="preconnect" href="https://raw.githubusercontent.com" />
-        
+
 
 
         {/* Favicon and App Icons */}
@@ -80,10 +81,10 @@ export default function Document() {
         <div id="loading-critical" className="loading-critical">
           Loading Purple Panda Book...
         </div>
-        
+
         <Main />
         <NextScript />
-        
+
         {/* Remove loading fallback once app loads */}
         <script
           dangerouslySetInnerHTML={{

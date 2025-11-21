@@ -225,16 +225,16 @@ export default function Home() {
   return (
     <div
       onClick={goToNextPage}
-      className="flex flex-col h-screen cursor-pointer no-select smooth-bg-transition"
+      className="min-h-screen flex flex-col cursor-pointer no-select smooth-bg-transition overflow-hidden"
       style={{ backgroundColor: colors.bgColor }}
       role="button"
       tabIndex={0}
       aria-label="Click or press space to see next animal combination"
     >
       {/* Header */}
-      <header className="h-16 pl-5 pr-5 pt-5">
+      <header className="flex-none p-4 md:p-8 flex justify-center items-center z-10">
         <h1
-          className="text-2xl font-bold fixed-height-text smooth-text-transition loading-fade enhanced-text"
+          className="text-3xl md:text-5xl lg:text-6xl font-bold text-center leading-tight smooth-text-transition loading-fade enhanced-text max-w-4xl mx-auto"
           style={{
             color: colors.topTextColor,
             opacity: transitioning ? 0.7 : 1,
@@ -252,8 +252,8 @@ export default function Home() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 flex items-center justify-center p-2" style={{ minHeight: '60vh' }}>
-        <div className="relative w-full h-full" style={{ maxHeight: '70vh' }}>
+      <main className="flex-1 flex items-center justify-center p-4 md:p-8 relative w-full overflow-hidden">
+        <div className="relative w-full h-full max-w-5xl mx-auto flex items-center justify-center" style={{ maxHeight: 'calc(100vh - 200px)' }}>
           {!loading && (
             <Image
               src={currentImageUrl}
@@ -261,6 +261,7 @@ export default function Home() {
               fill
               style={{
                 objectFit: 'contain',
+                padding: '20px',
               }}
               className={`smooth-image-transition optimized-image ${transitioning ? 'opacity-70' : 'opacity-100'
                 }`}
@@ -282,9 +283,9 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="h-24 pl-5 pr-5 pb-10 flex justify-end">
+      <footer className="flex-none p-6 md:p-10 flex justify-center items-center z-10">
         <p
-          className="w-1/2 text-l font-bold fixed-height-paragraph smooth-text-transition loading-fade enhanced-text"
+          className="text-xl md:text-3xl font-bold text-center smooth-text-transition loading-fade enhanced-text max-w-3xl mx-auto"
           style={{
             color: colors.bottomTextColor,
             opacity: transitioning ? 0.7 : 1,
